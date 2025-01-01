@@ -1,6 +1,6 @@
+import os
 import requests
 from bs4 import BeautifulSoup
-import json
 import time
 
 # Constants
@@ -11,8 +11,12 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 }
 
-def scrape_indian_kanoon(search_term, num_pages):
-    results = []
+# Base folder to store judgments
+OUTPUT_DIR = "writ"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def scrape_indian_kanoon(search_term, num_pages, start_count):
+    file_count = start_count
     for page in range(1, num_pages + 1):
         # Modify the URL to include `doctypes:judgments` for filtering judgments only
         url = f"{BASE_URL}{search_term.replace(' ', '+')}+doctypes:judgments&pagenum={page}"
@@ -32,7 +36,6 @@ def scrape_indian_kanoon(search_term, num_pages):
         
         for item in result_titles:
             try:
-                case_title = item.get_text(strip=True)
                 case_url = "https://indiankanoon.org" + item.find("a")["href"]
 
                 # Fetch the detailed case judgment
@@ -40,28 +43,24 @@ def scrape_indian_kanoon(search_term, num_pages):
                 case_soup = BeautifulSoup(case_response.content, 'html.parser')
                 judgment_text = " ".join([p.get_text(strip=True) for p in case_soup.find_all("p")])
 
-                results.append({
-                    "title": case_title,
-                    "url": case_url,
-                    "judgment": judgment_text
-                })
+                # Save the judgment text to a file
+                if judgment_text.strip():
+                    filename = os.path.join(OUTPUT_DIR, f"{file_count}.txt")
+                    with open(filename, 'w', encoding='utf-8') as file:
+                        file.write(judgment_text)
+                    print(f"Saved {filename}")
+                    file_count += 1
             except Exception as e:
                 print(f"Error processing case: {e}")
 
         print(f"Scraped page {page} for {search_term}")
         time.sleep(2)  # Be respectful to the server and avoid being blocked
 
-    return results
-
-def save_to_json(data, filename='indian_kanoon_data.json'):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    return file_count  # Return the updated file count
 
 if __name__ == "__main__":
-    all_results = {}
+    global_file_count = 1
     for query in SEARCH_QUERIES:
         print(f"Scraping data for: {query}")
-        results = scrape_indian_kanoon(query, NUM_PAGES)
-        all_results[query] = results
-    save_to_json(all_results)
+        global_file_count = scrape_indian_kanoon(query, NUM_PAGES, global_file_count)
     print("Data scraping completed.")
