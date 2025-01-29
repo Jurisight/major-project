@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Jurisight-Sign Up</title>
+    <link href="signup-style.css" rel="stylesheet" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script>
+      // Prevent navigating back to login after successful login
+      window.history.pushState(null, null, window.location.href);
+      window.onpopstate = function () {
+        window.history.pushState(null, null, window.location.href);
+      };
+    </script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <form id="signupForm">
+        <h1>Sign Up</h1>
+        <div class="input-box">
+          <input id="name" placeholder="Name" required />
+          <i class="bx bxs-user"></i>
+        </div>
+        <div class="input-box">
+          <input id="email" type="email" placeholder="User Email" required />
+          <i class="bx bxs-user"></i>
+        </div>
+        <div class="input-box">
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter Password"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
+        </div>
+        <div class="input-box">
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm Password"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
+        </div>
+        <div class="remember-forgot">
+          <label> <input type="checkbox" />Remember me </label>
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+        <button type="button" class="google-btn">
+          <img src="google.jpg" alt="Google Logo" />
+          Login with Google
+        </button>
+        
+        <div class="register-link">
+          <p>Already have an account? <a href="login.html">Login</a></p>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("signupForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("name").value;
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          const confirmPassword = document.getElementById("confirmPassword").value;
+
+          if (password !== confirmPassword) {
+            alert("Passwords do not match. Please try again.");
+            return;
+          }
+
+          try {
+            const response = await fetch("http://localhost:3000/signup", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              alert("Signup successful!");
+              localStorage.setItem("token", data.token);
+              window.location.href = "index.html";
+            } else {
+              alert(data.msg || "Signup failed");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred during signup.");
+          }
+        });
+    </script>
+  </body>
+</html>

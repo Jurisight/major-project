@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jurisight</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="top-bar">
+      <input
+        type="file"
+        id="file-upload"
+        accept="application/pdf"
+        style="display: none"
+      />
+      <button class="btn retrieve-btn" onclick="retrieveValue()">
+        Retrieve
+      </button>
+      <button class="btn download-btn" onclick="downloadPDF()">
+        Download PDF
+      </button>
+      <button class="btn logout-btn">Logout</button>
+    </div>
+
+    <header class="header">
+      <h2 class="title">Welcome to Jurisight</h2>
+      <h4 class="subtitle">Simplifying your Path to Justice!</h4>
+    </header>
+
+    <div class="chat-list"></div>
+
+    <div class="typing-area">
+      <form action="#" class="typing-form">
+        <div class="input-wrapper">
+          <!-- Attach file icon -->
+          <label
+            for="file-upload"
+            class="material-symbols-rounded attach-icon"
+            title="Attach File to summarize"
+          >
+            attach_file
+          </label>
+          <input
+            type="file"
+            id="file-upload"
+            accept="application/pdf"
+            style="display: none"
+          />
+          <input
+            type="text"
+            placeholder="Enter a prompt here"
+            class="typing-input"
+            required
+          />
+          <button type="submit" class="icon material-symbols-rounded">
+            send
+          </button>
+        </div>
+
+        <div class="action-buttons">
+          <span id="toggle-theme-button" class="icon material-symbols-rounded">
+            light_mode
+          </span>
+          <span id="delete-chat-button" class="icon material-symbols-rounded">
+            delete
+          </span>
+        </div>
+      </form>
+      <p class="disclaimer-text">
+        Jurisight is a research tool designed to assist with case analysis and
+        predictions. It does not replace professional legal judgment or advice.
+        Results are based on historical data and algorithms, which may not fully
+        account for unique case details or current legal standards. Users are
+        responsible for verifying insights and applying their professional
+        discretion. The developers disclaim liability for decisions made using
+        this tool.
+      </p>
+    </div>
+    <script src="script.js"></script>
+    <script>
+      // Prevent navigating back to the login page
+      window.onload = function () {
+        if (!localStorage.getItem("token")) {
+          window.location.href = "login.html"; // Redirect to login if no token
+        }
+
+        // Push initial state to block back navigation
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+          history.pushState(null, null, location.href); // Prevent back navigation
+          alert("You cannot go back to the login page. Please logout to exit.");
+        };
+      };
+
+      // Token expiry check
+      function isTokenExpired() {
+        const token = localStorage.getItem("token");
+        if (!token) return true;
+
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode the token
+        const expirationDate = new Date(payload.exp * 1000); // Convert to milliseconds
+        return expirationDate < new Date();
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (isTokenExpired()) {
+          localStorage.removeItem("token");
+          alert("Session expired. Please login again.");
+          window.location.href = "login.html";
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+
+        try {
+          const response = await fetch("http://localhost:3000/tokenIsValid", {
+            method: "POST",
+            headers: { "x-auth-token": token },
+          });
+
+          const isValid = await response.json();
+
+          if (!isValid) {
+            alert("Session expired. Please login again.");
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+          }
+        } catch (error) {
+          console.error("Error validating token:", error);
+          alert("An error occurred. Please login again.");
+          window.location.href = "login.html";
+        }
+      });
+
+      // Logout button functionality
+      document.querySelector(".logout-btn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        alert("Logged out successfully!");
+        window.location.href = "login.html";
+      });
+    </script>
+  </body>
+</html>

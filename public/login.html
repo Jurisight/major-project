@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Jurisight-Login</title>
+    <link href="login-style.css" rel="stylesheet" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="wrapper">
+      <form id="loginForm">
+        <h1>Login</h1>
+        <div class="input-box">
+          <input id="email" type="email" placeholder="User Email" required />
+          <i class="bx bxs-user"></i>
+        </div>
+        <div class="input-box">
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter Password"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
+        </div>
+        <div class="remember-forgot">
+          <label> <input type="checkbox" />Remember me </label>
+          <a href="#">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn">Login</button>
+
+        <!-- Google Login Button -->
+        <button type="button" class="google-btn">
+          <img src="google.jpg" alt="Google Logo" />
+          Login with Google
+        </button>
+
+        <div class="register-link">
+          <p>Don't have an account? <a href="signup.html">Register</a></p>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            const response = await fetch("http://localhost:3000/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              localStorage.setItem("token", data.token);
+              alert("Login successful!");
+              window.location.href = "index.html";
+            } else {
+              alert(data.msg || "Login failed");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred during login.");
+          }
+        });
+    </script>
+  </body>
+</html>
