@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Filing Demo</title>
+    <link rel="icon" href="Jurisight.png" />
+    <link href="draft.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Quick E-Filing</h2>
+
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" placeholder="Enter your full name" />
+
+      <label for="gender">Gender:</label>
+      <select id="gender" class="dropdown">
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+
+      <label for="case-type">Case Type:</label>
+      <select id="case-type" class="dropdown">
+        <option>WP(C) - Writ Petition (Civil)</option>
+        <option>Habeas Corpus</option>
+        <option>Mandamus</option>
+        <option>Certiorari</option>
+        <option>Prohibition</option>
+        <option>Quo-Warranto</option>
+      </select>
+
+      <label for="subject">Subject:</label>
+      <select id="subject" class="dropdown">
+        <option>Habeas Corpus</option>
+        <option>Mandamus</option>
+        <option>Certiorari</option>
+        <option>Prohibition</option>
+        <option>Quo-Warranto</option>
+      </select>
+
+      <label>Whether Accused/Petitioner/Appellant in Custody:</label>
+      <div class="radio-group">
+        Yes <input type="radio" name="custody" value="yes" />
+        No <input type="radio" name="custody" value="no" checked />
+      </div>
+
+      <label>Crime Registered:</label>
+      <div class="radio-group">
+        Yes <input type="radio" name="crime" value="yes" />
+        No <input type="radio" name="crime" value="no" checked />
+      </div>
+
+      <label>Application Filing (Crl.M.Appl / IA):</label>
+      <div class="radio-group">
+        Yes <input type="radio" name="application" value="yes" />
+        No <input type="radio" name="application" value="no" checked />
+      </div>
+
+      <label for="address">Address:</label>
+      <input type="text" id="address" placeholder="Enter your address" />
+
+      <label for="pincode">Pincode:</label>
+      <input type="text" id="pincode" placeholder="Enter pincode" />
+
+      <label for="num-applications">Number of Applications:</label>
+      <input
+        type="text"
+        id="num-applications"
+        placeholder="Enter number of applications"
+      />
+
+      <label for="prayer-details">Prayer Details:</label>
+      <textarea id="prayer-details" placeholder="Enter prayer details"></textarea>
+
+      <label for="interim-relief">Interim Relief Details:</label>
+      <textarea id="interim-relief" placeholder="Enter interim relief details"></textarea>
+
+      <label for="grounds">Grounds:</label>
+      <textarea id="grounds" placeholder="Enter grounds"></textarea>
+
+      <button onclick="submitForm()">Submit</button>
+    </div>
+
+    <script>
+      function fetchAndFillForm() {
+        const data = JSON.parse(localStorage.getItem("formData"));
+
+        if (!data) {
+          console.error("No form data found in localStorage.");
+          return;
+        }
+
+        // Correct mapping between extracted JSON keys and form field IDs
+        const formMappings = {
+          "Client Name": "name", 
+          "Gender": "gender", 
+          "Matter": "case-type",
+          "Client Objectives": "subject", 
+          "Facts.Address": "address", 
+          "Facts.Pincode": "pincode",
+          "Legal Analysis.Next Steps": "num-applications",
+          "Legal Analysis.Prayer Details": "prayer-details",
+          "Legal Analysis.Interim Relief Details": "interim-relief",
+          "Legal Analysis.Grounds": "grounds"
+        };
+
+        for (const jsonKey in formMappings) {
+          let fieldId = formMappings[jsonKey];
+          let field = document.getElementById(fieldId);
+
+          console.log(`Trying to fill ${fieldId} with ${data[jsonKey]}`);
+
+          if (field && data[jsonKey]) {
+            if (field.tagName === "INPUT" || field.tagName === "TEXTAREA") {
+              field.value = data[jsonKey];
+            } else if (field.tagName === "SELECT") {
+              for (const option of field.options) {
+                if (option.text.toLowerCase().trim() === String(data[jsonKey]).toLowerCase().trim()) {
+                  option.selected = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        // Autofill radio buttons
+        const radioMappings = {
+          "custody": "Custody Status", 
+          "crime": "Crime Registered", 
+          "application": "Application Filing"
+        };
+
+        for (const fieldName in radioMappings) {
+          let jsonKey = radioMappings[fieldName];
+          let radioValue = data[jsonKey];
+
+          if (radioValue) {
+            let radioButtons = document.getElementsByName(fieldName);
+
+            for (const button of radioButtons) {
+              if (button.value.toLowerCase().trim() === String(radioValue).toLowerCase().trim()) {
+                button.checked = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchAndFillForm);
+      function submitForm() {
+        alert("Form submitted successfully!");
+      }
+    </script>
+  </body>
+</html>

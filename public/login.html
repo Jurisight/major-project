@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Jurisight-Login</title>
+    <link rel="icon" href="Jurisight.png" />
     <link href="login-style.css" rel="stylesheet" />
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -34,7 +35,7 @@
         <button type="submit" class="btn">Login</button>
 
         <!-- Google Login Button -->
-        <button type="button" class="google-btn">
+        <button type="button" class="google-btn" id="googleLogin">
           <img src="google.jpg" alt="Google Logo" />
           Login with Google
         </button>
@@ -75,5 +76,24 @@
           }
         });
     </script>
+    <script>
+      document.getElementById("googleLogin").addEventListener("click", async () => {
+        try {
+          const response = await fetch("http://localhost:3000/api/auth/google-auth-url");
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.url) {
+            window.location.href = data.url; // Redirect to Google OAuth page
+          } else {
+            alert("Failed to generate Google login URL.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("An error occurred while trying to log in with Google.");
+        }
+      });
+    </script>    
   </body>
 </html>
